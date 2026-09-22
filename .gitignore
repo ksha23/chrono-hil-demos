@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+DEMO_OUTPUT/
+~$*
+_chrono_safe.urdf
+*.csv
+demos/manipulate/poses_*.log

@@ -1,0 +1,43 @@
+# The environment every demo in this tutorial runs in.
+#
+#     conda env create -f environment.yml
+#     conda activate chrono-hil
+#
+# PyChrono comes from the projectchrono channel, and the BUILD NUMBER is pinned
+# because the version alone is not enough: build 1187 is the first with the
+# vehicle KeyboardMode::HELD API that Part 2 uses, and "pychrono=10.0.0" is
+# happy to hand you a build from five months earlier that does not have it.
+#
+# Python is 3.12 for the same reason, which is not a preference. On linux-64
+# every pychrono py313 build after 638 (Apr 2026) is compiled against the
+# FREE-THREADED cp313t ABI, so with python=3.13 the solver cannot use them and
+# quietly falls back to 638 -- no warning, no conflict, just an environment
+# where veh.ChInteractiveDriver has no KeyboardMode_HELD and Part 2 silently
+# runs in "cumulative". macOS never saw this because osx-arm64's py313 1187 is
+# a plain cp313 build. The py312 1187 build is plain cp312 on linux-64,
+# osx-arm64 and win-64 alike, so all three get the same Chrono.
+name: chrono-hil
+channels:
+  - projectchrono
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pychrono=10.0.0=*_1187
+  - numpy>=2.0
+  - pygame>=2.6          # the manipulation console: demo 4's own input
+                         # window, for builds that cannot read the 3D one.
+                         # Demos 1 to 3 never touch it.
+  - irrlicht=1.8.5       # the 3D window PyChrono renders into
+  - pip
+  - pip:
+      - torch>=2.4       # the Go2 locomotion policy; omit and it falls back to a PD stance
+      - trimesh>=4.0     # only needed to re-convert robot meshes, not to run
+      - ikpy>=4.1        # the Franka's inverse kinematics. NOT optional: demo 3's
+                         # arm imports it through chronohil/ik.py, and so does
+                         # every `from chronohil import ...`. It reads the same
+                         # URDF Chrono does and brings scipy with it.
+      # NOTHING PLATFORM-SPECIFIC LIVES HERE ANY MORE. Reading the mouse on
+      # the 3D window used to need three pyobjc wheels on macOS; macos.py now
+      # calls CoreGraphics through ctypes, the way the Linux and Windows
+      # backends have always called X11 and user32. One less install to get
+      # wrong, on the one platform where it was easiest to get wrong.
